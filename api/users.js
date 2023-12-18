@@ -1,5 +1,7 @@
 const express = require('express');
 const usersRouter = express.Router();
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
 const { 
   createUser,
@@ -11,7 +13,7 @@ const jwt = require('jsonwebtoken');
 
 usersRouter.get('/', async (req, res, next) => {
   try {
-    const users = await getAllUsers();
+    const users = await prisma.user.getAllUsers();
   
     res.send({
       users
@@ -33,7 +35,7 @@ usersRouter.post('/login', async (req, res, next) => {
   }
 
   try {
-    const user = await getUserByUsername(username);
+    const user = await prisma.user.getUserByUsername(username);
 
     if (user && user.password == password) {
       const token = jwt.sign({ 
@@ -63,7 +65,7 @@ usersRouter.post('/register', async (req, res, next) => {
   const { username, password, name, location } = req.body;
 
   try {
-    const _user = await getUserByUsername(username);
+    const _user = await prisma.user.getUserByUsername(username);
   
     if (_user) {
       next({
@@ -73,7 +75,7 @@ usersRouter.post('/register', async (req, res, next) => {
     }
 
     const hashedPassword = bcrypt.hashSync(password)
-    const user = await createUser({
+    const user = await prisma.user.createUser({
       username,
       password: hashedPassword,
       name,
