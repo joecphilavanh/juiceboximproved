@@ -10,6 +10,7 @@ const {
 } = require('../db');
 
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 usersRouter.get('/', async (req, res, next) => {
   try {
@@ -65,9 +66,9 @@ usersRouter.post('/register', async (req, res, next) => {
   const { username, password, name, location } = req.body;
 
   try {
-    const _user = await prisma.user.getUserByUsername(username);
+    const oldUser = await prisma.user.getUserByUsername(username);
   
-    if (_user) {
+    if (oldUser) {
       next({
         name: 'UserExistsError',
         message: 'A user by that username already exists'
@@ -75,7 +76,7 @@ usersRouter.post('/register', async (req, res, next) => {
     }
 
     const hashedPassword = bcrypt.hashSync(password)
-    const user = await prisma.user.createUser({
+    const Newuser = await prisma.user.create({
       username,
       password: hashedPassword,
       name,
@@ -83,7 +84,7 @@ usersRouter.post('/register', async (req, res, next) => {
     });
 
     const token = jwt.sign({ 
-      id: user.id, 
+      id: Newuser.id, 
       username
     }, process.env.JWT_SECRET, {
       expiresIn: '1w'
