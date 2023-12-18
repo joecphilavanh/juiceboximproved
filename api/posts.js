@@ -98,7 +98,23 @@ postsRouter.patch('/:postId', requireUser, async (req, res, next) => {
 });
 
 postsRouter.delete('/:postId', requireUser, async (req, res, next) => {
-  res.send({ message: 'under construction' });
+  const { postId } = req.params;
+
+  try {
+    const postToDelete = await getPostById(postId);
+
+    if (!postToDelete) {
+      return res.status(400).json({ message: 'Post not found' });
+    }
+
+    else {
+      return res.status(400).json({ message: 'This is not your post to delete' });
+    }
+
+    res.status(200).json({ message: 'Post has been deleted' });
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = postsRouter;
